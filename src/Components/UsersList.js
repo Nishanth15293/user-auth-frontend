@@ -37,6 +37,7 @@ const Styles = {
 class UsersList extends Component {
  constructor() {
     super();
+    const current_user = localStorage.current_user ? JSON.parse(localStorage.current_user) : {};
     this.state = {
       data: [],
       pages: null,
@@ -47,14 +48,8 @@ class UsersList extends Component {
       phone: null,
       role: null,
       id: null,
-      disabled: (() => {
-        let user = localStorage.current_user ? JSON.parse(localStorage.current_user) : {};
-        if(user.role === 'admin' || user.role === 'superadmin') {
-          return false;
-        } else {
-          return true;
-        }
-      })()
+      disabled: true,
+      current_user: current_user
     };
     this.fetchData = this.fetchData.bind(this);
     this.openModal = this.openModal.bind(this);
@@ -65,6 +60,7 @@ class UsersList extends Component {
     this.roleChange = this.roleChange.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    
   }
 
   update() {
@@ -144,25 +140,42 @@ class UsersList extends Component {
 
     return (
       <div>
+        <h3 className="table-title">Users</h3>
         <ReactTable
 
           getTrProps = {(state,rowInfo)=> {
             return {
               onClick: () => {
-                console.log(rowInfo.row);
+                const { current_user } = this.state;
+                
+                var disable = true;
+                if(current_user._id == rowInfo.row._id){
+                  disable = false;
+                }
+                if(current_user.role == 'admin' && rowInfo.row.role == 'user'){
+                  disable = false;
+                }
+                if(current_user.role == 'superadmin'){
+                  disable = false;
+                }
                 this.setState({
                   modalIsOpen: true,
                   email: rowInfo.row.email,
                   name: rowInfo.row.name,
                   phone: rowInfo.row.phone,
                   role: rowInfo.row.role,
-                  id: rowInfo.row._id
+                  id: rowInfo.row._id,
+                  disabled: disable
                 });
 
               }
             }
           }}
           columns={[
+            {
+                Header: "Avatar",
+              accessor: "avatarURL"
+            },
             {
               Header: "Name",
               accessor: "name"
@@ -174,10 +187,6 @@ class UsersList extends Component {
             {
               Header: "Phone",
               accessor: "phone"
-            },
-            {
-                Header: "Avatar",
-              accessor: "avatarURL"
             },
             {
                 Header: "Role",
@@ -195,7 +204,7 @@ class UsersList extends Component {
           loading={loading} // Display the loading overlay when we need it
           onFetchData={this.fetchData} // Request new data when things change
           filterable
-          defaultPageSize={25}
+          defaultPageSize={10}
           className="-striped -highlight grid"
         />
         <br />
@@ -204,8 +213,11 @@ class UsersList extends Component {
           style={customStyles}
           onRequestClose={this.closeModal}
           contentLabel="User Modal"
-        >
+        > 
           <div className='container'>
+          <div className='row'>
+            <a className="pull-right" onClick={this.closeModal}><span className="glyphicon glyphicon-remove cursor-btn"></span></a>
+          </div>            
             <div className='row'>
               <div className='col-md-4 col-sm-4'>
                 <img className='img-rounded' src="http://via.placeholder.com/150x150" alt="test"/>
@@ -227,13 +239,14 @@ class UsersList extends Component {
                   <label style = {Styles.label}>Roles:</label>
                   {/* <input type="text" className='form-control' disabled={this.state.disabled} value={this.state.role} onChange = {this.roleChange} /> */}
                   <select value={this.state.role} disabled={this.state.disabled} onChange = {this.roleChange}>
-                    <option value="superadmin">Super Admin</option>
+                    <option value="user">User</option>
                     <option value="admin">Admin</option>
-                    <option value="User">User</option>
                   </select>
                 </div>
-                <button className='btn btn-primary' onClick={this.update}>Update</button>
-                <button className='btn btn-danger' style={Styles.delete} onClick={this.delete}>Delete</button>
+                <div className="row form-group">
+                  <button className='btn btn-primary pull-right' disabled={this.state.disabled} onClick={this.update}>Update User</button>
+                  <button className='btn btn-danger pull-left' disabled={this.state.disabled} onClick={this.delete}>Delete User</button>
+                </div>
               </div>
             </div>
           </div>

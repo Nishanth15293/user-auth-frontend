@@ -12,7 +12,6 @@ class Navbar extends Component {
     }
 
     logoutClicked = (e)=>{
-        debugger;
         localStorage.removeItem('token');
         delete(localStorage.token);
         delete(localStorage.current_user);
@@ -27,7 +26,7 @@ class Navbar extends Component {
                 <ul className="nav nav-tabs pull-right">
                     {(!this.state.isAuthenticated && <li role="presentation" ><NavLink activeClassName="selected" exact to="/" >Login</NavLink></li>)}
                     {(!this.state.isAuthenticated && <li role="presentation"><NavLink activeClassName="selected" exact to="/register">Sign Up</NavLink></li>)}
-                    {(this.state.isAuthenticated && <li role="presentation"><a onClick={this.logoutClicked}>Logout</a></li>)}
+                    {(this.state.isAuthenticated && <li role="presentation"><a className="cursor-btn" onClick={this.logoutClicked}>Logout</a></li>)}
                 </ul>
             </div>
 
